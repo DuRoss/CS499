@@ -1,4 +1,14 @@
-#Farkle game designed by Dustin Ross to be ported from C++ to Python
+"""
+Farkle game designed by Dustin Ross to be ported from C++ to Python
+
+Program Description:
+This program was designed to mimic the dice game Farkle. The game allows users to enter their names
+and roll and score dice in a race to reach 10,000 points. The RollScoring function assists the 
+scoring of the game by listing the potential scoring options for users and allowing them to choose
+from these. This also cuts down on potential user error in selecting and using multiple dice. The 
+program also has an option for listing the Farkle rules for first time players and uses prompts to
+help guide them through the experience.
+"""
 
 #Imports
 import random as rando
@@ -28,14 +38,16 @@ class Dice():
 def RollScoring(diceList, diceNum):
     scoreOptions = []
     rollTotal = 0
-    optionChoice = 0
     countForThree = 0
     remainingDice = 0
     optionCount = 0
+    optionSelection = 0
     continueScoring = ''
+    optionChoice = ''
     stillScores = True
     didScore = False
     didRemove = False
+    validInput = False
 
     #Set remainingDice equal to the number of dice passed
     remainingDice = len(diceList)
@@ -98,7 +110,7 @@ def RollScoring(diceList, diceNum):
             scoreOptions.append(50)
             print(str(optionCount) + ": 5 = 50 points")
 
-        #Check if there are any score options available
+        #Check if there are any score options available, and determine if Farkle or all possible dice are used
         if(optionCount < 1):
             if(didScore == False):
                 print("Farkle!\n")
@@ -109,12 +121,30 @@ def RollScoring(diceList, diceNum):
 
         #Add on the selected score to the rollTotal and remove the dice
         if(stillScores == True):
-            optionChoice = int(input("\nPlease select from the available scoring options: "))
-            optionChoice -= 1
-            rollTotal += scoreOptions[optionChoice]
+            #Loop to ensure user selects a valid option
+            while(validInput == False):
+                optionChoice = input("\nPlease select from the available scoring options: ")
 
+                #Checks if user choice is numeric before converting it to an int for index use
+                if(optionChoice.isnumeric() == True):
+
+                    #Converts optionChoice to the int optionSelection for index use purposes, and checks if it is a valid selection
+                    optionSelection = int(optionChoice)
+                    if(optionSelection > 0 and optionSelection <= len(scoreOptions)):
+                        optionSelection -= 1
+                        rollTotal += scoreOptions[optionSelection]
+                        validInput = True
+                    else:
+                        print("Invalid selection! Please select a scoring option listed.")
+                else:
+                    print("Invalid selection! Please select a scoring option listed.")
+
+            #Set validInput back to False for future use
+            validInput = False
+
+            #Condition statement to remove appropriate dice, and set didScore to True for the roll
             #Remove three dice that show 1 from the dice pool and use didScore to show user scored this roll
-            if(scoreOptions[optionChoice] == 1000):
+            if(scoreOptions[optionSelection] == 1000):
                 for i in range(0, len(diceList)):
                     if(diceList[i] == 1 and countForThree < 3):
                         diceList[i] = 0
@@ -123,7 +153,7 @@ def RollScoring(diceList, diceNum):
                 didScore = True
 
             #Remove three dice that show 2 from the dice pool and use didScore to show user scored this roll
-            elif(scoreOptions[optionChoice] == 200):
+            elif(scoreOptions[optionSelection] == 200):
                 for i in range(0, len(diceList)):
                     if(diceList[i] == 2 and countForThree < 3):
                         diceList[i] = 0
@@ -132,7 +162,7 @@ def RollScoring(diceList, diceNum):
                 didScore = True
 
             #Remove three dice that show 3 from the dice pool and use didScore to show user scored this roll
-            elif(scoreOptions[optionChoice] == 300):
+            elif(scoreOptions[optionSelection] == 300):
                 for i in range(0, len(diceList)):
                     if(diceList[i] == 3 and countForThree < 3):
                         diceList[i] = 0
@@ -141,7 +171,7 @@ def RollScoring(diceList, diceNum):
                 didScore = True
 
             #Remove three dice that show 4 from the dice pool and use didScore to show user scored this roll
-            elif(scoreOptions[optionChoice] == 400):
+            elif(scoreOptions[optionSelection] == 400):
                 for i in range(0, len(diceList)):
                     if(diceList[i] == 4 and countForThree < 3):
                         diceList[i] = 0
@@ -150,7 +180,7 @@ def RollScoring(diceList, diceNum):
                 didScore = True
 
             #Remove three dice that show 5 from the dice pool and use didScore to show user scored this roll
-            elif(scoreOptions[optionChoice] == 500):
+            elif(scoreOptions[optionSelection] == 500):
                 for i in range(0, len(diceList)):
                     if(diceList[i] == 5 and countForThree < 3):
                         diceList[i] = 0
@@ -159,7 +189,7 @@ def RollScoring(diceList, diceNum):
                 didScore = True
 
             #Remove three dice that show 6 from the dice pool and use didScore to show user scored this roll
-            elif(scoreOptions[optionChoice] == 600):
+            elif(scoreOptions[optionSelection] == 600):
                 for i in range(0, len(diceList)):
                     if(diceList[i] == 6 and countForThree < 3):
                         diceList[i] = 0
@@ -168,7 +198,7 @@ def RollScoring(diceList, diceNum):
                 didScore = True
 
             #Remove one die that shows 1 from the dice pool and use didScore to show user scored this roll
-            elif(scoreOptions[optionChoice] == 100):
+            elif(scoreOptions[optionSelection] == 100):
                 for i in range(0, len(diceList)):
                     if(diceList[i] == 1 and didRemove == False):
                         diceList[i] = 0
@@ -177,7 +207,7 @@ def RollScoring(diceList, diceNum):
                 didScore = True
 
             #Remove one die that shows 1 from the dice pool and use didScore to show user scored this roll
-            elif(scoreOptions[optionChoice] == 50):
+            elif(scoreOptions[optionSelection] == 50):
                 for i in range(0, len(diceList)):
                     if(diceList[i] == 5 and didRemove == False):
                         diceList[i] = 0
@@ -185,66 +215,87 @@ def RollScoring(diceList, diceNum):
                 remainingDice -= 1
                 didScore = True
 
-            continueScoring = input("\nWould you like to continue scoring current dice? (y - yes, n - no): ")
-
-            if(continueScoring == 'y'):
-                stillScores = True
-            elif(continueScoring == 'n'):
-                stillScores = False
+            #Confirm if user would like to set aside more dice and ensure valid input
+            while(validInput == False):
+                continueScoring = input("\nWould you like to continue scoring current dice? (y - yes, n - no): ")
+                if(continueScoring == 'y'):
+                    stillScores = True
+                    validInput = True
+                elif(continueScoring == 'n'):
+                    stillScores = False
+                    validInput = True
+                else:
+                    print("Invalid input! Please enter y for yes or n for no.")
             
         #Remove dice changed to 0's to simulate set aside dice
         while(0 in diceList):
               diceList.remove(0)
 
-        #Reset counting variables and clear lists
+        #Reset counting variables, clear lists, and set validating booleans back to False
         scoreOptions.clear()
         optionCount = 0
         countForThree = 0
         didRemove = False
+        validInput = False
         diceNum = remainingDice
 
+    #Return the score for the roll and the remaining dice to roll
     return rollTotal, diceNum
 
-#Player turn function
+#Runs the turn for active player by rolling dice, calling the RollScoring function, and ending the turn when appropriate
 def PlayerTurn():
+
     MAX_DICE_AMOUNT = 6
     currentDiceNum = MAX_DICE_AMOUNT
     rollScore = 0
     turnScore = 0
     continueChoice = ''
     endTurn = False
+    validInput = False
     diceList = []
     die = Dice(6)
 
+    #Loop until the user's turn has ended, either through choice or a forced end through a Farkle
     while(endTurn != True):
 
         #Roll number of dice equal to available dice
         for i in range(0, currentDiceNum):
             diceList.append(die.RollDie())
 
+        #Send the list of dice for the roll to the RollScoring function, and return the score choices and unused dice number
         rollScore, currentDiceNum = RollScoring(diceList, currentDiceNum)
 
+        #Condition statement that forces end of turn if a Farkle occurs, or offers the turn player the chance to continue rolling
         if(rollScore == 0):
             turnScore = 0
             endTurn = True
         else:
-            continueChoice = input("\nWould you like to continue rolling? (y - yes, n - no): ")
-            if(continueChoice == 'n'):
-                turnScore += rollScore
-                endTurn = True
-            elif(continueChoice == 'y'):
-                turnScore += rollScore
-                diceList.clear()
+            #Loops section until user provides proper input
+            while(validInput == False):
+                continueChoice = input("\nWould you like to continue rolling? (y - yes, n - no): ")
+                if(continueChoice == 'n'):
+                    turnScore += rollScore
+                    endTurn = True
+                    validInput = True
+                elif(continueChoice == 'y'):
+                    turnScore += rollScore
+                    diceList.clear()
+                    validInput = True
+                else:
+                    print("Invalid input! Please enter y for yes or n for no.")
             
-
+            #Set validInput to false for future looping
+            validInput = False
+            
+    #Return the player's score for the turn
     return turnScore
 
-#Main game setup function
+#Main game setup function, this function creates the list of players and handles the turn/round tracking and monitors for a winning score
 def FarkleGame():
     
     gameWinner = Player("temp")
     playerList = []
-    numPlayersToPlay = 0
+    numPlayersToPlay = ''
     turnPlayer = 0
     finalRoundCounter = 0
     roundCounter = 1
@@ -255,20 +306,26 @@ def FarkleGame():
 
     #Loop to determine the number of players and account for incorrect input
     while(validInput == False):
-        
-        numPlayersToPlay = int(input("\nPlease enter the number of players for the game: "))
 
-        #Check for valid input
-        if(numPlayersToPlay > 0):
-            validInput = True
+        numPlayersToPlay = input("\nPlease enter the number of players for the game: ")
+
+        #Check if user input is a number before attempting to use as an int
+        if(numPlayersToPlay.isnumeric()) == True:
+
+            #Check for valid input
+            if(int(numPlayersToPlay) > 0):
+                validInput = True
+            else:
+                print("\nInvalid input! Please enter a number that is more than zero.")
+
         else:
-            print("\nInvalid input! Please enter a number that is more than zero!")
+            print("\nInvalid input! Please enter a number that is more than zero.")
 
     #Set validInput to False for later use
     validInput = False
 
     #For loop to get each player's name and add them to the playerList
-    for i in range(0, numPlayersToPlay):
+    for i in range(0, int(numPlayersToPlay)):
 
         addedPlayerName = input("Please enter player " + str(i + 1) + "'s name: ")
         playerList.append(Player(addedPlayerName))
@@ -318,34 +375,37 @@ def FarkleGame():
     print("\nCongratulations " + gameWinner.playerName + "!\n\nFinal Scores:")
     for i in range(0, len(playerList)):
         print(playerList[i].playerName + ": " + str(playerList[i].currentScore))
-
-                    
+                 
 #START OF PROGRAM
-menuChoice = 0
+menuChoice = ''
 readRules = ""
 
 #Print welcome message for users starting program
 print("Welcome to Farkle!")
 
 #Loop for main menu selections
-while(menuChoice != 3):
+while(menuChoice != '3'):
 
     #List menu options for the user
-    menuChoice = int(input("\n1. Play Farkle\n2. See Rules\n3. Exit Program\n\nPlease select a menu option: "))
+    menuChoice = input("\n1. Play Farkle\n2. See Rules\n3. Exit Program\n\nPlease select a menu option: ")
 
     #If statement to perform proper action based on user selection
-    if(menuChoice == 1):
+    #Begins the main Farkle game
+    if(menuChoice == '1'):
         FarkleGame()
 
-    elif(menuChoice == 2):
+    #Prints rules of the game for users who are unfamiliar
+    elif(menuChoice == '2'):
 
         #Uses with to open the rules file and close it after the contents are printed
         with open('FarkleRules.txt') as rules:
             readRules = rules.read()
             print(readRules)
 
-    elif(menuChoice == 3):
+    #Exits the program
+    elif(menuChoice == '3'):
         print("\nThank you for playing Farkle!")
 
+    #Accounts for potential incorrect input from the user
     else:
         print("\nPlease select a valid option listed above")
