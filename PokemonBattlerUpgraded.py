@@ -1,13 +1,20 @@
 #Started: September 30, 2021
-#Last Updated: December 6, 2022
+#Last Updated: December 11, 2022
 #Author: Dustin Ross
+
+"""
+Program Description:
+This program is designed to recreate the experience of Pokemon battles in the popular Nintendo game. It recreates 
+the experience by mimicking Pokemon and characters from the actual series and letting users take control of them for
+battling. In its current state the game uses official moves, Pokemon, and damage calculations along with tactical 
+influences like move accuracy and status conditions to create a similar experience to the real world equivalent.
+"""
 
 #Imports
 import random as rando
-import PySimpleGUI as sg
 
 #Class Definitions
-#Creates a table for reference during damage calculation
+#Creates a table for reference during damage calculation that is based on the type match ups exhibited in Pokemon games
 class TypeMatchup:
 
     def __init__(self):
@@ -101,6 +108,7 @@ class TypeMatchup:
                                     'ELECTRIC':1,'PSYCHIC':1,'ICE':1,'DRAGON':2,
                                     'DARK':2,'FAIRY':1}
         
+    #Returns a damage multiplier based on the type matchup.
     def getMatchup(self, moveType, defenderType):
         if(moveType == 'NORMAL'):
             if(defenderType in self.normal):
@@ -158,6 +166,7 @@ class TypeMatchup:
                 return self.fairy.get(defenderType, None)
 
 #Creates a Pokemon class to define multiple Pokemon
+#Pokemon consist of a name, type/types, level, base stats for calculation, and a list of four moves to use in battle
 class Pokemon:
 
     currentHP = 0
@@ -197,6 +206,7 @@ class Pokemon:
                     + " and " + self.pkmnType2 + " at level " + str(self.pkmnLevel))
 
 #Creates trainer class for players to choose from for Pokemon battles
+#Trainers are pre-made player characters who command a team of Pokemon in battle
 class Trainer:
 
     team = []
@@ -228,6 +238,8 @@ class Trainer:
             print(self.team[i].pkmnName)
     
 #Creates a Move class to define multiple moves
+#Moves consist of a name, type, contact type to determine if it uses Pokemon attack or special attack stats, power,
+#accuracy, a status condition, and a percent chance of inflicting that status condition
 class Move:
 
     def __init__(self, moveName, moveType, contactType, movePower, moveAccuracy, statusCondition, statusPercent):
@@ -249,7 +261,7 @@ class PokemonRoster:
 
     roster = []
     #Creates a roster of Pokemon in the game that are accessible through their roster slot
-    #Sorted by Nation Dex number
+    #Sorted by National Dex number as definied by official Pokemon video games
     def __init__(self):
         self.roster.append(Pokemon("Venusaur", "Grass", "Poison", 50, 80, 82, 83, 100, 100, 80, Solarbeam, Earthquake, PoisonPowder, SludgeBomb))
         self.roster.append(Pokemon("Charizard", "Fire", "Flying", 50, 78, 84, 78, 109, 85, 100, Flamethrower, Solarbeam, WingAttack, Earthquake))
@@ -282,6 +294,7 @@ class TrainerRoster:
 
     roster = []
 
+    #Trainers are characters taken from the official manga based on the games
     def __init__(self):
         self.roster.append(Trainer("Leon", PokemonRoster.roster[22], PokemonRoster.roster[24], PokemonRoster.roster[4], PokemonRoster.roster[16], PokemonRoster.roster[17], PokemonRoster.roster[18]))
         self.roster.append(Trainer("Red", PokemonRoster.roster[9], PokemonRoster.roster[0], PokemonRoster.roster[3], PokemonRoster.roster[12], PokemonRoster.roster[14], PokemonRoster.roster[15]))
@@ -289,45 +302,54 @@ class TrainerRoster:
         self.roster.append(Trainer("Green", PokemonRoster.roster[7], PokemonRoster.roster[2], PokemonRoster.roster[13], PokemonRoster.roster[6], PokemonRoster.roster[5], PokemonRoster.roster[19]))
          
 #Function Definitions
+#Runs through the player and opponent character selection process to reduce redundancy
+def TrainerSelect():
+    
+    trainerChoice = ''
+    trainerSelect = False
+    selectedTrainer = None
+    validInput = False
+    i = 0
+
+    #Loop until both players have made valid trainer selections
+    while(trainerSelect != True):
+
+        #Prints the list of available trainers for players to select from
+        while(i < len(TrainerRoster.roster)):
+            print(str(i+1) + " " + TrainerRoster.roster[i].trainerName)
+            i += 1
+
+        #Gets the active player's trainer choice and validates the input
+        while(validInput != True):
+
+            #Get trainer choice from the player
+            trainerChoice = input("Please select your trainer: ")
+
+            #If a valid choice is made sets the selectedTrainer to the player's choice
+            if(trainerChoice.isnumeric() == True):
+                if(int(trainerChoice)-1 < len(TrainerRoster.roster)):
+                    selectedTrainer = TrainerRoster.roster[int(trainerChoice)-1]
+                    trainerSelect = True
+                    validInput = True
+                else:
+                    print("Please select an option listed.")
+            else:
+                print("Invalid selection! Please enter a number for the corresponding trainer.")
+
+    #Return trainer based on validated user selection
+    return selectedTrainer
+
 #Displays a menu of trainers for players to select from
 def CharacterMenu():
     
-    playerChoice = 0
-    playerSelect = False
     playerTrainer = None
-    opponentChoice = 0
-    opponentSelect = False
     opponentTrainer = None
-    i = 0
 
-    while(playerSelect != True):
-        while(i < len(TrainerRoster.roster)):
-            print(str(i+1) + " " + TrainerRoster.roster[i].trainerName)
-            i += 1
-
-        playerChoice = input("Please select your trainer: ")
-
-        if(int(playerChoice)-1 < len(TrainerRoster.roster)):
-            playerTrainer = TrainerRoster.roster[int(playerChoice)-1]
-            playerSelect = True
-        else:
-            print("Please select an option listed.")
-
-    i = 0
-    while(opponentSelect != True):
-        while(i < len(TrainerRoster.roster)):
-            print(str(i+1) + " " + TrainerRoster.roster[i].trainerName)
-            i += 1
-
-        opponentChoice = input("Please select opponent trainer: ")
-
-        if(int(opponentChoice)-1 < len(TrainerRoster.roster)):
-            opponentTrainer = TrainerRoster.roster[int(opponentChoice)-1]
-            opponentSelect = True
-        else:
-            print("Please select an option listed.")
-            
-    print()
+    #Uses TrainerSelect to set the trainer for each player
+    playerTrainer = TrainerSelect()
+    opponentTrainer = TrainerSelect()
+        
+    #Allow each player select their team order before beginning the Trainer Battle
     playerTrainer.team = PokemonSelect(playerTrainer)
     opponentTrainer.team = PokemonSelect(opponentTrainer)
     TrainerBattle(playerTrainer, opponentTrainer)
@@ -336,28 +358,45 @@ def CharacterMenu():
 def PokemonSelect(trainerTeam):
 
     currentOrder = []
-    selection = 0
+    selection = ''
+    validInput = False
     passes = 0
     i = 0
 
-    print("Select team order")
+    #Print a message instructing the user to select the order that their trainer's team will appear in
+    print("\nSelect team order")
 
+    #Passes through the trainer's team six times to allow individual selections for each Pokemon on the team
     while(passes < 6):
+
+        #Print a list of remaining Pokemon for the next team slot
         while(i < len(trainerTeam.team)):
             print(str(i + 1) + ". " + trainerTeam.team[i].pkmnName)
             i = i + 1
-        selection = int(input("Select number for next Pokemon: ")) - 1
-        if(selection < len(trainerTeam.team)):
-            currentOrder.append(trainerTeam.team[selection])
-            trainerTeam.team.pop(selection)
-            i = 0
-            passes = passes + 1
-        else:
-            print("Please selection a valid option.")
 
-    #while(i < len(currentOrder)):
-        #print(str(i + 1) + ". " + currentOrder[i].pkmnName)
-        #i = i + 1
+        #Gets the selection for the next team slot from the user and validates it as good input
+        while(validInput != True):
+            selection = input("Select number for next Pokemon: ")
+            if(selection.isnumeric() == True):
+                if((int(selection) - 1) < len(trainerTeam.team)):
+                    currentOrder.append(trainerTeam.team[int(selection) - 1])
+                    trainerTeam.team.pop(int(selection) - 1)
+                    i = 0
+                    passes = passes + 1
+                    validInput = True
+                else:
+                    print("Invalid selection! Please select a number corresponding to a Pokemon.")
+            else:
+                print("Invalid selection! Please select a number corresponding to a Pokemon.")
+
+        #Set validInput to False to prepare for next pass and selection to an empty string
+        validInput = False
+
+    #Print a newline and the order that the player selected for their team
+    print()
+    while(i < len(currentOrder)):
+        print(str(i + 1) + ". " + currentOrder[i].pkmnName)
+        i = i + 1
 
     return currentOrder
     
@@ -371,6 +410,8 @@ def Damage(attacker, attackMove, defender):
     critChance = rando.randint(1, 100)
     statusChance = rando.randint(1,100)
     typeEffectiveness = 0.0
+
+    #Determine if the attack move should use the attacker's attack or special attack
     if(attackMove.contactType == "Physical"):
         calculatedDamage = (((((2*attacker.pkmnLevel)/5)+2)*attackMove.movePower*(attacker.baseAttack/defender.baseDefense))/50+2)
     elif(attackMove.contactType == "Special"):
@@ -381,21 +422,27 @@ def Damage(attacker, attackMove, defender):
         calculatedDamage = calculatedDamage * 1.5
         print("Critical Hit!")
         
-    #Check for same type attack bonus
+    #Check for same type attack bonus if attacker and move are of the same type
     if(attacker.pkmnType1 == attackMove.moveType or attacker.pkmnType2 == attackMove.moveType):
         calculatedDamage = calculatedDamage * 1.5
 
-    #Check for move effectiveness
+    #Check for move effectiveness based on the type matchup table
     typeEffectiveness = typeChart.getMatchup(attackMove.moveType.upper(), defender.pkmnType1.upper())
     if(defender.pkmnType2 != None):
         typeEffectiveness = typeEffectiveness * typeChart.getMatchup(attackMove.moveType.upper(), defender.pkmnType2.upper())
     calculatedDamage = calculatedDamage * typeEffectiveness
+
+    #Print a message informing the player of the effectiveness of their selected move
     if(typeEffectiveness >= 2 and attackMove.contactType != "Status"):
         print("It's super-effective!")
     elif(typeEffectiveness > 0 and typeEffectiveness <= 0.5 and attackMove.contactType != "Status"):
         print("It's not very effective!")
     elif(typeEffectiveness == 0):
         print("It has no effect!")
+
+    #Check if the attacker is burned and using a physical attack, and if they are cut the final damage in half
+    if(attacker.currentStatus == "BRN" and attackMove.contactType == "Physical"):
+        calculatedDamage = calculatedDamage / 2
 
     #Check for status condition on attacking move, generate random number based on statusPercent, and apply status if successful
     if(typeEffectiveness != 0 and attackMove.statusCondition != None and defender.currentStatus == None):
@@ -412,7 +459,7 @@ def Damage(attacker, attackMove, defender):
             if(defender.currentStatus == "SLP"):
                 print(defender.pkmnName + " was put to sleep!")
     
-    #Newline for readability
+    #Newline for readability and return the total damage calculated
     print()
     return calculatedDamage
 
@@ -422,20 +469,23 @@ def AccuracyCheck(attack):
     hit = False
     hitChance = rando.randint(1, 100)
 
+    #Uses the randomly generated hitChance to determine if the hitChance falls below the move's accuracy and causes a miss
     if(hitChance <= attack.moveAccuracy):
         hit = True
     else:
         hit = False
 
+    #Return whether the attack was a successful hit or a failure
     return hit
 
 #Allows players to switch the active member to a non-knocked out member
 def Switch(trainerTeam):
 
     i = 0
-    switchSelection = 0
+    switchSelection = ''
     validSelection = False
     
+    #List out the player's current Pokemon and their status's, and validate that they select a valid switch option
     while(validSelection != True):
         while(i < len(trainerTeam.team)):
             if(trainerTeam.team[i].currentStatus == None):
@@ -445,17 +495,23 @@ def Switch(trainerTeam):
                 print(str(i + 1) + ". " + trainerTeam.team[i].pkmnName + " - " + trainerTeam.team[i].currentStatus)
                 i = i + 1
 
-        switchSelection = int(input("Select the Pokemon you want to switch in: ")) - 1
+        switchSelection = input("Select the Pokemon you want to switch in: ")
 
-        if(switchSelection >= len(trainerTeam.team)):
-            print("Please make a valid selection!")
-        elif(trainerTeam.team[switchSelection].currentStatus == "KO"):
-            print("Cannot select a knocked out Pokemon!")
+        #Validate that the switchSelection is a number to avoid crashes
+        if(switchSelection.isnumeric() == True):
+            #Inform user if they make a selection that is invalid or cannot be switched in
+            if(int(switchSelection) >= len(trainerTeam.team)):
+                print("Please make a valid selection!")
+            elif(trainerTeam.team[int(switchSelection)].currentStatus == "KO"):
+                print("Cannot select a knocked out Pokemon!")
+            else:
+                #Swap the switching Pokemon's place in team order with the Pokemon to be switched in
+                tempPoke = trainerTeam.team[int(switchSelection)]
+                trainerTeam.team[int(switchSelection)] = trainerTeam.team[0]
+                trainerTeam.team[0] = tempPoke
+                validSelection = True
         else:
-            tempPoke = trainerTeam.team[switchSelection]
-            trainerTeam.team[switchSelection] = trainerTeam.team[0]
-            trainerTeam.team[0] = tempPoke
-            validSelection = True
+            print("Invalid selection! Please select a number corresponding to a Pokemon listed.")
 
 #Menu to let players choose to attack or switch
 def BattleMenu():
@@ -463,6 +519,7 @@ def BattleMenu():
     selection = ""
     valid = False
 
+    #Checks that the active player makes a valid selection and performs the requested action
     while(valid == False):
         selection = input("1. Attack\n2. Switch\nSelect an option: ")
         if(selection == "1"):
@@ -477,22 +534,28 @@ def BattleMenu():
 #Display active Pokemon's attacks for players to choose from
 def AttackMenu(attacker):
 
-    selection = 0
+    selection = ''
     i = 0
     validSelection = False
     
+    #List the active Pokemon's available attacks
     while(validSelection == False):
         while(i < len(attacker.moveList)):
             print(str(i + 1) + ". " + attacker.moveList[i].moveName)
             i = i + 1
 
+        #Receive the user's selected move and validate the selection
         selection = input("Please select from the moves listed: ")
 
-        if(int(selection) > len(attacker.moveList)):
-            print("Please make a valid selection!")
+        if(selection.isnumeric() == True):
+            if(int(selection) > len(attacker.moveList)):
+                print("Please make a valid selection!")
+            else:
+                validSelection = True
         else:
-            validSelection = True
+            print("Invalid input! Please select a number corresponding to an attack as listed.")
 
+    #Return the selected attack as an int to use for indexing
     return int(selection) - 1
         
 #Simulates combat between the two active Pokemon
@@ -505,28 +568,37 @@ def Combat(attacker, move, defender):
 
     #Determine if the Pokemon can move based on current status
     if(attacker.currentStatus == "SLP"): 
+
+        #Determine if the Pokemon wakes up from their sleep
         if(moveChance <= 50):
             canMove = False
         else:
             print(attacker.pkmnName + " woke up!")
             attacker.currentStatus = None
             canMove = True
+
     elif(attacker.currentStatus == "PAR"):
+
+        #Determine if the user is unable to move due to paralysis
         if(moveChance <= 25):
             canMove = False
         else:
             canMove = True
+
     elif(attacker.currentStatus == "FRZ"):
+
+        #Determine if the user thaws from their frozen state or not
         if(moveChance <= 20):
             canMove = False
         else:
             print(attacker.pkmnName + " thawed out!")
             attacker.currentStatus = None
             canMove = True
+
     else:
         canMove = True
 
-
+    #Perform the move that the player selected if the Pokemon can move
     if(canMove == True):
         print(attacker.pkmnName + " used " + move.moveName + "!")
         if(hit == True):
@@ -536,6 +608,8 @@ def Combat(attacker, move, defender):
                 print(attacker.pkmnName + " knocked out " + defender.pkmnName + "!")
         else:
             print(attacker.pkmnName + "'s attack missed!")
+
+    #If user can not move print a status alerting the player as to why it could not move
     else:
         if(attacker.currentStatus == "SLP"):
             print(attacker.pkmnName + " is fast asleep!")
@@ -551,9 +625,10 @@ def TrainerBattle(player1, player2):
     p2MoveChoice = 0
     playerChoice = 0
     opponentChoice = 0
+    speedTieBreaker = rando.randint(1, 2)
     battleEnd = False
-    i = 0 
 
+    #Loops until the battle has come to an end
     while(battleEnd != True):
 
         #Display each players' current Pokemon, HP/MaxHP, and Status
@@ -561,12 +636,12 @@ def TrainerBattle(player1, player2):
         print(player2.team[0].pkmnName + "  " + str(player2.team[0].currentHP) + "/" + str(player2.team[0].baseHitPoints) + " HP   Status: " + str(player2.team[0].currentStatus))
         
         #Get player selections for this round
-        print("Player 1 please choose an option")
+        print("\nPlayer 1 please choose an option")
         playerChoice = BattleMenu()
         if(playerChoice == 1):
             p1MoveChoice = AttackMenu(player1.team[0])
 
-        print("Player 2 please choose an option")
+        print("\nPlayer 2 please choose an option")
         opponentChoice = BattleMenu()
         if(opponentChoice == 1):
             p2MoveChoice = AttackMenu(player2.team[0])
@@ -580,32 +655,71 @@ def TrainerBattle(player1, player2):
         #Battle calculations
         #Player 1 & 2 choose attack
         if(playerChoice == 1 and opponentChoice == 1):
-            if(player1.team[0].baseSpeed >= player2.team[0].baseSpeed):
+
+            #If player 1's active Pokemon has a higher speed than player 2's, player 1 moves first
+            if(player1.team[0].baseSpeed > player2.team[0].baseSpeed):
                 Combat(player1.team[0], player1.team[0].moveList[p1MoveChoice], player2.team[0])
+
+                #Checks if player 2's Pokemon has been knocked out before continuing combat
                 if(player2.team[0].currentStatus != "KO"):
                     Combat(player2.team[0], player2.team[0].moveList[p2MoveChoice], player1.team[0])
+
+                    #If player 1's Pokemon has been knocked out check for the end of battle, and if they still have remaining Pokemon force a switch
                     if(player1.team[0].currentStatus == "KO"):
                         battleEnd = endOfBattle(player1)
                         if(battleEnd != True):
                             Switch(player1)
+                
+                #If player 2's Pokemon has been knocked out check for the end of battle, and if they still have remaining Pokemon force a switch
                 else:
                     battleEnd = endOfBattle(player2)
                     if(battleEnd != True):
                         Switch(player2)
-            else:
+
+            #If player 2's active Pokemon has higher speed than player 1's player 2 moves first
+            elif(player2.team[0].baseSpeed > player1.team[0].baseSpeed):
                 Combat(player2.team[0], player2.team[0].moveList[p2MoveChoice], player1.team[0])
+
+                #Checks if player 1's Pokemon has been knocked out before continuing combat
                 if(player1.team[0].currentStatus != "KO"):
                     Combat(player1.team[0], player1.team[0].moveList[p1MoveChoice], player2.team[0])
+
+                    #If player 2's Pokemon has been knocked out check for the end of battle, and if they still have remaining Pokemon force a switch
                     if(player2.team[0].currentStatus == "KO"):
                         battleEnd = endOfBattle(player2)
                         if(battleEnd != True):
                             Switch(player2)
+
+                #If player 1's Pokemon has been knocked out check for the end of battle, and if they still have remaining Pokemon force a switch
                 else:
                     battleEnd = endOfBattle(player1)
                     if(battleEnd != True):
                         Switch(player1)
 
-        #Player 1 chose attack, but player 2 chose switch
+            #Uses the speedTieBreak to simulate a coin flip and determine who goes first when the active speed stat is tied
+            else:
+
+                #If speedTieBreak is one, proceed with player 1 moving first
+                if(speedTieBreaker == 1):
+                    Combat(player1.team[0], player1.team[0].moveList[p1MoveChoice], player2.team[0])
+                    if(player2.team[0].currentStatus != "KO"):
+                        Combat(player2.team[0], player2.team[0].moveList[p2MoveChoice], player1.team[0])
+                        if(player1.team[0].currentStatus == "KO"):
+                            battleEnd = endOfBattle(player1)
+                            if(battleEnd != True):
+                                Switch(player1)
+
+                #If speedTieBreak is one, proceed with player 2 moving first
+                else:
+                    Combat(player2.team[0], player2.team[0].moveList[p2MoveChoice], player1.team[0])
+                    if(player1.team[0].currentStatus != "KO"):
+                        Combat(player1.team[0], player1.team[0].moveList[p1MoveChoice], player2.team[0])
+                        if(player2.team[0].currentStatus == "KO"):
+                            battleEnd = endOfBattle(player2)
+                            if(battleEnd != True):
+                                Switch(player2)
+
+        #Player 1 chose attack, but player 2 chose switch, perform player 1's attack on the switched in Pokemon
         elif(playerChoice == 1 and opponentChoice == 2):
             Combat(player1.team[0], player1.team[0].moveList[p1MoveChoice], player2.team[0])
             if(player2.team[0].currentStatus == "KO"):
@@ -613,7 +727,7 @@ def TrainerBattle(player1, player2):
                 if(battleEnd != True):
                     Switch(player2)
 
-        #Player 1 chose switch, but player 2 chose attack
+        #Player 1 chose switch, but player 2 chose attack, perform player 1's attack on the switched in Pokemon
         elif(playerChoice == 2 and opponentChoice == 1):
             Combat(player2.team[0], player2.team[0].moveList[p2MoveChoice], player1.team[0])
             if(player1.team[0].currentStatus == "KO"):
@@ -652,17 +766,19 @@ def endOfBattle(playerTeam):
     numKnocks = 0
     i = 0
 
+    #Counts the number of knocked out Pokemon on the passed player's team
     while(i < len(playerTeam.team)):
         if(playerTeam.team[i].currentStatus == "KO"):
             numKnocks += 1
         i += 1
 
+    #If the number of knocked out Pokemon is equal to the whole team, end the battle
     if(numKnocks >= len(playerTeam.team)):
         endBattle = True
 
     return endBattle
 
-#Moves
+#Moves that are currently available
 BodySlam = Move("Body Slam", "Normal", "Physical", 85, 100, "PAR", 30)
 PsychoCut = Move("Psycho Cut", "Psychic", "Physical", 70, 100, None, 0)
 Psychic = Move("Psychic", "Psychic", "Special", 90, 100, None, 0)
@@ -686,21 +802,6 @@ SleepPowder = Move("Sleep Powder", "Grass", "Status", 0, 75, "SLP", 100)
 StunSpore = Move("Stun Spore", "Grass", "Status", 0, 75, "PAR", 100)
 
 #Start of program
-
-#Potential UI for later purpose
-#layout = [[sg.Text("Pokemon Stadium 3")], [sg.Button("Start")], [sg.Button("Close")]]
-#window = sg.Window("Pokemon Stadium 3", layout)
-
-#while True:
-#    event, values = window.read()
-    # End program if user closes window or
-    # presses the Close button
-#   if event == "Close" or event == sg.WIN_CLOSED:
-#        break
-#    elif event == "Start":
-#        CharacterMenu()
-
-#window.close()
 
 PokemonRoster()
 TrainerRoster()
