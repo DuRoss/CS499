@@ -9,4 +9,4 @@ This folder contains my original Python file as well as the enhancement Javascri
 ## Documents
 I have also included a written narrative detailing each enhancement process, and a professional self assessment of my skills that I have developed to this point.
 ## Code Review
-This is the link to my code review of the original three artifacts uploaded as an unlisted YouTube video. (Insert link here
+This is the link to my code review of the original three artifacts uploaded as an unlisted YouTube video. (https://www.youtube.com/watch?v=Wt-VUKMPOGU)
